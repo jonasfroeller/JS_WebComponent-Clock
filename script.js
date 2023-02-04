@@ -1,12 +1,12 @@
 // Digital Clock
 function isColor(strColor) {
-    var s = new Option().style;
-    s.color = strColor;
-    return s.color == strColor;
+  var s = new Option().style;
+  s.color = strColor;
+  return s.color == strColor;
 }
 const hexColorPatternV1 = /#[A-z0-9]{3,6}/;
 const hexColorPatternV2 = /[A-z0-9]{3,6}/;
-const digitalClock = document.createElement('template');
+const digitalClock = document.createElement("template");
 digitalClock.innerHTML = `
     <style>
     #clock-digital {
@@ -14,7 +14,7 @@ digitalClock.innerHTML = `
         --data-backgroundColor: #000;
         font-family: 'Goldman';
         font-size: 125%;
-        width: 60%;
+        width: 43.75rem;
         text-align: center;
         color: var(--data-color);
         background-color: var(--data-backgroundColor);
@@ -27,7 +27,8 @@ digitalClock.innerHTML = `
     #clock-day {
         writing-mode: vertical-rl;
         text-orientation: upright;
-        letter-spacing: -20px;
+        letter-spacing: 0px;
+        padding-left: 50px;
         padding-bottom: 20px;
     }
     
@@ -40,12 +41,11 @@ digitalClock.innerHTML = `
     }
     
     #clock-time {
+        width: 31.25rem;
         display: grid;
         justify-content: center;
-        min-width: 66%;
-        max-width: 100%;
-        grid-template-columns: calc(100% / 4) calc(100% / 10) calc(100% / 4) calc(100% / 10) calc(100% / 4);
-        font-size: 250%;
+        grid-template-columns: calc(100% / 4) calc(100% / 8) calc(100% / 4) calc(100% / 8) calc(100% / 4);
+        font-size: 200%;
     }
     
     #clock-hours, #clock-minutes, #clock-seconds, #clock-AmPm {
@@ -53,7 +53,7 @@ digitalClock.innerHTML = `
     }
     
     #clock-date {
-        font-size: 200%;
+        font-size: 175%;
     }
     </style>
 
@@ -75,144 +75,192 @@ digitalClock.innerHTML = `
 
 // Define ES6 class
 class DigitalClock extends HTMLElement {
-    constructor() {
-        let self = super();
-        console.log(self);
+  constructor() {
+    let self = super();
+    console.log(self);
 
-        // SHADOW DOM
-        this.attachShadow({
-            mode: 'open'
-        });
+    // SHADOW DOM
+    this.attachShadow({
+      mode: "open",
+    });
 
-        this.shadowRoot.appendChild(digitalClock.content.cloneNode(true));
-        console.log(this.shadowRoot.querySelector('#clock-digital'));
-    }
+    this.shadowRoot.appendChild(digitalClock.content.cloneNode(true));
+    console.log(this.shadowRoot.querySelector("#clock-digital"));
+  }
 
-    static get observedAttributes() {
-        return ['data-timezone', 'data-language', 'data-color', 'data-backgroundcolor']; // only lowercase allowed!!!
-    }
+  static get observedAttributes() {
+    return [
+      "data-timezone",
+      "data-language",
+      "data-color",
+      "data-backgroundcolor",
+    ]; // only lowercase allowed!!!
+  }
 
-    // customize template with attributes
-    attributeChangedCallback(attrName, oldValue, newValue) {
-        if (newValue != "") {
-            if (attrName == 'data-timezone') {
-                if (newValue.length >= 2 && newValue.match(/\//g).length == 1 && newValue.match(/,/g).length == 1) {
-                    let s1 = newValue.split(",");
-                    let s2 = s1[1].split("/");
-                    let dynamicDate = new Date().toLocaleString(`${s1[0].trim()}`, {
-                        timeZone: `${s2[0].trim()}/${s2[1].trim()}`
-                    });
-                    this.shadowRoot.querySelector("#clock-region").innerHTML = s2[0].trim() + "/" + s2[1].trim();
-                    console.log(dynamicDate);
+  // customize template with attributes
+  attributeChangedCallback(attrName, oldValue, newValue) {
+    if (newValue != "") {
+      if (attrName == "data-timezone") {
+        if (
+          newValue.length >= 2 &&
+          newValue.match(/\//g).length == 1 &&
+          newValue.match(/,/g).length == 1
+        ) {
+          let s1 = newValue.split(",");
+          let s2 = s1[1].split("/");
+          let dynamicDate = new Date().toLocaleString(`${s1[0].trim()}`, {
+            timeZone: `${s2[0].trim()}/${s2[1].trim()}`,
+          });
+          this.shadowRoot.querySelector("#clock-region").innerHTML =
+            s2[0].trim() + "/" + s2[1].trim();
+          console.log(dynamicDate);
 
-                    this.updateDigitalClock(dynamicDate);
-                    let thisElem = this;
-                    setInterval(function () {
-                        let dynamicDate = new Date().toLocaleString(`${s1[0].trim()}`, {
-                            timeZone: `${s2[0].trim()}/${s2[1].trim()}`
-                        });
+          this.updateDigitalClock(dynamicDate);
+          let thisElem = this;
+          setInterval(function () {
+            let dynamicDate = new Date().toLocaleString(`${s1[0].trim()}`, {
+              timeZone: `${s2[0].trim()}/${s2[1].trim()}`,
+            });
 
-                        thisElem.updateDigitalClock(dynamicDate);
-                    }, 1000);
-                } else {
-                    console.log(`${attrName}:`, `Invalid Attribute data! (${newValue.toLowerCase()})`);
-                }
-            }
-            if (attrName == 'data-language') {
-                let todaysDate = new Date();
-                let dayAsText;
-                if (newValue.match(/[a-z]{2}-[A-Z]{2}/)) {
-                    dayAsText = todaysDate.toLocaleDateString(newValue, { // "au-AU"
-                        weekday: 'long'
-                    });
-                    this.shadowRoot.querySelector("#clock-day").innerHTML = dayAsText;
-                    console.log(`${attrName}:`, newValue, dayAsText);
-                } else if (newValue.match(/[a-z]{2}/)) {
-                    dayAsText = todaysDate.toLocaleDateString(newValue.toLowerCase() + "-" + newValue.toUpperCase(), { // "au-AU"
-                        weekday: 'long'
-                    });
-                    this.shadowRoot.querySelector("#clock-day").innerHTML = dayAsText;
-                    console.log(`${attrName}:`, newValue.toLowerCase() + "-" + newValue.toUpperCase(), dayAsText);
-                } else {
-                    console.log(`${attrName}:`, `Invalid Attribute data! (${newValue.toLowerCase()})`);
-                }
-            }
-            if (attrName == 'data-color') { // document.documentElement.style.setProperty('--data-backgroundColor', `${newValue}`);
-                if (newValue.match(hexColorPatternV1)) {
-                    console.log(`${attrName}:`, newValue.toLowerCase());
-                    this.shadowRoot.querySelector('#clock-digital').style.setProperty('--data-color', newValue);
-                } else if (newValue.match(hexColorPatternV2) && !isColor(newValue)) {
-                    console.log(`${attrName}:`, "#" + newValue.toLowerCase());
-                    this.shadowRoot.querySelector('#clock-digital').style.setProperty('--data-color', "#" + newValue);
-                } else {
-                    if (isColor(newValue)) {
-                        this.shadowRoot.querySelector('#clock-digital').style.setProperty('--data-color', newValue);
-                    } else {
-                        console.log(`${attrName}:`, `Invalid Attribute data! (${newValue.toLowerCase()})`);
-                    }
-                }
-            }
-            if (attrName == 'data-backgroundcolor') { // document.documentElement.style.setProperty('--data-backgroundColor', `${newValue}`);
-                if (newValue.match(hexColorPatternV1)) {
-                    console.log(`${attrName}:`, newValue.toLowerCase());
-                    this.shadowRoot.querySelector('#clock-digital').style.setProperty('--data-backgroundColor', newValue);
-                } else if (newValue.match(hexColorPatternV2) && !isColor(newValue)) {
-                    console.log(`${attrName}:`, "#" + newValue.toLowerCase());
-                    this.shadowRoot.querySelector('#clock-digital').style.setProperty('--data-backgroundColor', "#" + newValue);
-                } else {
-                    if (isColor(newValue)) {
-                        this.shadowRoot.querySelector('#clock-digital').style.setProperty('--data-backgroundColor', newValue);
-                    } else {
-                        console.log(`${attrName}:`, `Invalid Attribute data! (${newValue.toLowerCase()})`);
-                    }
-                }
-            }
+            thisElem.updateDigitalClock(dynamicDate);
+          }, 1000);
         } else {
-            let dynamicDate = new Date();
-
-            this.updateDigitalClock(dynamicDate);
-            let thisElem = this;
-            setInterval(function () {
-                let dynamicDate = new Date();
-
-                thisElem.updateDigitalClock(dynamicDate);
-            }, 1000);
-            console.log(`${attrName}:`, `Invalid Attribute data! (${newValue.toLowerCase()})`);
+          console.log(
+            `${attrName}:`,
+            `Invalid Attribute data! (${newValue.toLowerCase()})`
+          );
         }
+      }
+      if (attrName == "data-language") {
+        let todaysDate = new Date();
+        let dayAsText;
+        if (newValue.match(/[a-z]{2}-[A-Z]{2}/)) {
+          dayAsText = todaysDate.toLocaleDateString(newValue, {
+            // "au-AU"
+            weekday: "long",
+          });
+          this.shadowRoot.querySelector("#clock-day").innerHTML = dayAsText;
+          console.log(`${attrName}:`, newValue, dayAsText);
+        } else if (newValue.match(/[a-z]{2}/)) {
+          dayAsText = todaysDate.toLocaleDateString(
+            newValue.toLowerCase() + "-" + newValue.toUpperCase(),
+            {
+              // "au-AU"
+              weekday: "long",
+            }
+          );
+          this.shadowRoot.querySelector("#clock-day").innerHTML = dayAsText;
+          console.log(
+            `${attrName}:`,
+            newValue.toLowerCase() + "-" + newValue.toUpperCase(),
+            dayAsText
+          );
+        } else {
+          console.log(
+            `${attrName}:`,
+            `Invalid Attribute data! (${newValue.toLowerCase()})`
+          );
+        }
+      }
+      if (attrName == "data-color") {
+        // document.documentElement.style.setProperty('--data-backgroundColor', `${newValue}`);
+        if (newValue.match(hexColorPatternV1)) {
+          console.log(`${attrName}:`, newValue.toLowerCase());
+          this.shadowRoot
+            .querySelector("#clock-digital")
+            .style.setProperty("--data-color", newValue);
+        } else if (newValue.match(hexColorPatternV2) && !isColor(newValue)) {
+          console.log(`${attrName}:`, "#" + newValue.toLowerCase());
+          this.shadowRoot
+            .querySelector("#clock-digital")
+            .style.setProperty("--data-color", "#" + newValue);
+        } else {
+          if (isColor(newValue)) {
+            this.shadowRoot
+              .querySelector("#clock-digital")
+              .style.setProperty("--data-color", newValue);
+          } else {
+            console.log(
+              `${attrName}:`,
+              `Invalid Attribute data! (${newValue.toLowerCase()})`
+            );
+          }
+        }
+      }
+      if (attrName == "data-backgroundcolor") {
+        // document.documentElement.style.setProperty('--data-backgroundColor', `${newValue}`);
+        if (newValue.match(hexColorPatternV1)) {
+          console.log(`${attrName}:`, newValue.toLowerCase());
+          this.shadowRoot
+            .querySelector("#clock-digital")
+            .style.setProperty("--data-backgroundColor", newValue);
+        } else if (newValue.match(hexColorPatternV2) && !isColor(newValue)) {
+          console.log(`${attrName}:`, "#" + newValue.toLowerCase());
+          this.shadowRoot
+            .querySelector("#clock-digital")
+            .style.setProperty("--data-backgroundColor", "#" + newValue);
+        } else {
+          if (isColor(newValue)) {
+            this.shadowRoot
+              .querySelector("#clock-digital")
+              .style.setProperty("--data-backgroundColor", newValue);
+          } else {
+            console.log(
+              `${attrName}:`,
+              `Invalid Attribute data! (${newValue.toLowerCase()})`
+            );
+          }
+        }
+      }
+    } else {
+      let dynamicDate = new Date();
+
+      this.updateDigitalClock(dynamicDate);
+      let thisElem = this;
+      setInterval(function () {
+        let dynamicDate = new Date();
+
+        thisElem.updateDigitalClock(dynamicDate);
+      }, 1000);
+      console.log(
+        `${attrName}:`,
+        `Invalid Attribute data! (${newValue.toLowerCase()})`
+      );
     }
+  }
 
-    updateDigitalClock(date) {
-        let dynamicDate = new Date(date);
-        let element = this.shadowRoot.querySelector('#clock-digital');
+  updateDigitalClock(date) {
+    let dynamicDate = new Date(date);
+    let element = this.shadowRoot.querySelector("#clock-digital");
 
-        let day = String(dynamicDate.getDate()).padStart(2, '0');
-        let month = String(dynamicDate.getMonth() + 1).padStart(2, '0');
-        let year = dynamicDate.getFullYear();
-        let dateToday = day + "." + month + "." + year;
-        element.querySelector("#clock-date").innerHTML = dateToday;
+    let day = String(dynamicDate.getDate()).padStart(2, "0");
+    let month = String(dynamicDate.getMonth() + 1).padStart(2, "0");
+    let year = dynamicDate.getFullYear();
+    let dateToday = day + "." + month + "." + year;
+    element.querySelector("#clock-date").innerHTML = dateToday;
 
-        let hour = dynamicDate.getHours();
-        let min = dynamicDate.getMinutes();
-        let sec = dynamicDate.getSeconds();
+    let hour = dynamicDate.getHours();
+    let min = dynamicDate.getMinutes();
+    let sec = dynamicDate.getSeconds();
 
-        // console.log(element.querySelector("#clock-day").innerHTML + ",", dateToday);
-        // console.log(hour, min, sec);
-        // console.log(dynamicDate);
+    // console.log(element.querySelector("#clock-day").innerHTML + ",", dateToday);
+    // console.log(hour, min, sec);
+    // console.log(dynamicDate);
 
-        hour = hour < 10 ? "0" + hour : hour;
-        min = min < 10 ? "0" + min : min;
-        sec = sec < 10 ? "0" + sec : sec;
+    hour = hour < 10 ? "0" + hour : hour;
+    min = min < 10 ? "0" + min : min;
+    sec = sec < 10 ? "0" + sec : sec;
 
-        element.querySelector("#clock-hours").innerHTML = hour;
-        element.querySelector("#clock-minutes").innerHTML = min;
-        element.querySelector("#clock-seconds").innerHTML = sec;
-    }
+    element.querySelector("#clock-hours").innerHTML = hour;
+    element.querySelector("#clock-minutes").innerHTML = min;
+    element.querySelector("#clock-seconds").innerHTML = sec;
+  }
 }
 // CUSTOM ELEMENT
-window.customElements.define('digital-clock', DigitalClock); //<digital-clock>
+window.customElements.define("digital-clock", DigitalClock); //<digital-clock>
 
 // Digital Clock
-const analogClock = document.createElement('template');
+const analogClock = document.createElement("template");
 analogClock.innerHTML = `
     <style>
     #clock-analog {
@@ -473,126 +521,171 @@ analogClock.innerHTML = `
 
 // Define ES6 class
 class AnalogClock extends HTMLElement {
-    constructor() {
-        let self = super();
-        console.log(self);
+  constructor() {
+    let self = super();
+    console.log(self);
 
-        // SHADOW DOM
-        this.attachShadow({
-            mode: 'open'
-        });
-        this.shadowRoot.appendChild(analogClock.content.cloneNode(true));
+    // SHADOW DOM
+    this.attachShadow({
+      mode: "open",
+    });
+    this.shadowRoot.appendChild(analogClock.content.cloneNode(true));
 
-        console.log(this.shadowRoot.querySelector('#clock-analog'));
-    }
+    console.log(this.shadowRoot.querySelector("#clock-analog"));
+  }
 
-    static get observedAttributes() {
-        return ['data-timezone', 'data-maincolor', 'data-secondarycolor', 'data-backgroundcolor']; // only lowercase allowed!!!
-    }
+  static get observedAttributes() {
+    return [
+      "data-timezone",
+      "data-maincolor",
+      "data-secondarycolor",
+      "data-backgroundcolor",
+    ]; // only lowercase allowed!!!
+  }
 
-    // customize template with attributes
-    attributeChangedCallback(attrName, oldValue, newValue) {
-        if (newValue != "") {
-            if (attrName == 'data-timezone') {
-                if (newValue.includes("/") && newValue.includes(",")) { // newValue.length >= 2 && newValue.match(/\//g).length == 1 && newValue.match(/,/g).length == 1
-                    let s1 = newValue.split(",");
-                    let s2 = s1[1].split("/");
-                    let dynamicDate = new Date().toLocaleString(`${s1[0].trim()}`, {
-                        timeZone: `${s2[0].trim()}/${s2[1].trim()}`
-                    });
-                    console.warn(dynamicDate);
+  // customize template with attributes
+  attributeChangedCallback(attrName, oldValue, newValue) {
+    if (newValue != "") {
+      if (attrName == "data-timezone") {
+        if (newValue.includes("/") && newValue.includes(",")) {
+          // newValue.length >= 2 && newValue.match(/\//g).length == 1 && newValue.match(/,/g).length == 1
+          let s1 = newValue.split(",");
+          let s2 = s1[1].split("/");
+          let dynamicDate = new Date().toLocaleString(`${s1[0].trim()}`, {
+            timeZone: `${s2[0].trim()}/${s2[1].trim()}`,
+          });
+          console.warn(dynamicDate);
 
-                    this.updateDigitalClock(dynamicDate);
-                    let thisElem = this;
-                    setInterval(function () {
-                        let dynamicDate = new Date().toLocaleString(`${s1[0].trim()}`, {
-                            timeZone: `${s2[0].trim()}/${s2[1].trim()}`
-                        });
+          this.updateDigitalClock(dynamicDate);
+          let thisElem = this;
+          setInterval(function () {
+            let dynamicDate = new Date().toLocaleString(`${s1[0].trim()}`, {
+              timeZone: `${s2[0].trim()}/${s2[1].trim()}`,
+            });
 
-                        thisElem.updateDigitalClock(dynamicDate);
-                    }, 1000);
-                } else {
-                    console.log(`${attrName}:`, `Invalid Attribute data! (${newValue.toLowerCase()})`);
-                }
-            }
-            if (attrName == 'data-maincolor') {
-                if (newValue.match(hexColorPatternV1)) {
-                    console.log(`${attrName}:`, newValue.toLowerCase());
-                    this.shadowRoot.querySelector('#clock-analog').style.setProperty('--data-maincolor', newValue);
-                } else if (newValue.match(hexColorPatternV2) && !isColor(newValue)) {
-                    console.log(`${attrName}:`, "#" + newValue.toLowerCase());
-                    this.shadowRoot.querySelector('#clock-analog').style.setProperty('--data-maincolor', "#" + newValue);
-                } else {
-                    if (isColor(newValue)) {
-                        this.shadowRoot.querySelector('#clock-analog').style.setProperty('--data-maincolor', newValue);
-                    } else {
-                        console.log(`${attrName}:`, `Invalid Attribute data! (${newValue.toLowerCase()})`);
-                    }
-                }
-            }
-            if (attrName == 'data-secondarycolor') {
-                if (newValue.match(hexColorPatternV1)) {
-                    console.log(`${attrName}:`, newValue.toLowerCase());
-                    this.shadowRoot.querySelector('#clock-analog').style.setProperty('--data-secondarycolor', newValue);
-                } else if (newValue.match(hexColorPatternV2) && !isColor(newValue)) {
-                    console.log(`${attrName}:`, "#" + newValue.toLowerCase());
-                    this.shadowRoot.querySelector('#clock-analog').style.setProperty('--data-secondarycolor', "#" + newValue);
-                } else {
-                    if (isColor(newValue)) {
-                        this.shadowRoot.querySelector('#clock-analog').style.setProperty('--data-secondarycolor', newValue);
-                    } else {
-                        console.log(`${attrName}:`, `Invalid Attribute data! (${newValue.toLowerCase()})`);
-                    }
-                }
-            }
-            if (attrName == 'data-backgroundcolor') {
-                if (newValue.match(hexColorPatternV1)) {
-                    console.log(`${attrName}:`, newValue.toLowerCase());
-                    this.shadowRoot.querySelector('#clock-analog').style.setProperty('--data-backgroundcolor', newValue);
-                } else if (newValue.match(hexColorPatternV2) && !isColor(newValue)) {
-                    console.log(`${attrName}:`, "#" + newValue.toLowerCase());
-                    this.shadowRoot.querySelector('#clock-analog').style.setProperty('--data-backgroundcolor', "#" + newValue);
-                } else {
-                    if (isColor(newValue)) {
-                        this.shadowRoot.querySelector('#clock-analog').style.setProperty('--data-backgroundcolor', newValue);
-                    } else {
-                        console.log(`${attrName}:`, `Invalid Attribute data! (${newValue.toLowerCase()})`);
-                    }
-                }
-            }
+            thisElem.updateDigitalClock(dynamicDate);
+          }, 1000);
         } else {
-            let dynamicDate = new Date();
-
-            this.updateDigitalClock(dynamicDate);
-            let thisElem = this;
-            setInterval(function () {
-                let dynamicDate = new Date();
-
-                thisElem.updateDigitalClock(dynamicDate);
-            }, 1000);
-
-            console.log(`${attrName}:`, `Invalid Attribute data! (${newValue.toLowerCase()})`);
+          console.log(
+            `${attrName}:`,
+            `Invalid Attribute data! (${newValue.toLowerCase()})`
+          );
         }
+      }
+      if (attrName == "data-maincolor") {
+        if (newValue.match(hexColorPatternV1)) {
+          console.log(`${attrName}:`, newValue.toLowerCase());
+          this.shadowRoot
+            .querySelector("#clock-analog")
+            .style.setProperty("--data-maincolor", newValue);
+        } else if (newValue.match(hexColorPatternV2) && !isColor(newValue)) {
+          console.log(`${attrName}:`, "#" + newValue.toLowerCase());
+          this.shadowRoot
+            .querySelector("#clock-analog")
+            .style.setProperty("--data-maincolor", "#" + newValue);
+        } else {
+          if (isColor(newValue)) {
+            this.shadowRoot
+              .querySelector("#clock-analog")
+              .style.setProperty("--data-maincolor", newValue);
+          } else {
+            console.log(
+              `${attrName}:`,
+              `Invalid Attribute data! (${newValue.toLowerCase()})`
+            );
+          }
+        }
+      }
+      if (attrName == "data-secondarycolor") {
+        if (newValue.match(hexColorPatternV1)) {
+          console.log(`${attrName}:`, newValue.toLowerCase());
+          this.shadowRoot
+            .querySelector("#clock-analog")
+            .style.setProperty("--data-secondarycolor", newValue);
+        } else if (newValue.match(hexColorPatternV2) && !isColor(newValue)) {
+          console.log(`${attrName}:`, "#" + newValue.toLowerCase());
+          this.shadowRoot
+            .querySelector("#clock-analog")
+            .style.setProperty("--data-secondarycolor", "#" + newValue);
+        } else {
+          if (isColor(newValue)) {
+            this.shadowRoot
+              .querySelector("#clock-analog")
+              .style.setProperty("--data-secondarycolor", newValue);
+          } else {
+            console.log(
+              `${attrName}:`,
+              `Invalid Attribute data! (${newValue.toLowerCase()})`
+            );
+          }
+        }
+      }
+      if (attrName == "data-backgroundcolor") {
+        if (newValue.match(hexColorPatternV1)) {
+          console.log(`${attrName}:`, newValue.toLowerCase());
+          this.shadowRoot
+            .querySelector("#clock-analog")
+            .style.setProperty("--data-backgroundcolor", newValue);
+        } else if (newValue.match(hexColorPatternV2) && !isColor(newValue)) {
+          console.log(`${attrName}:`, "#" + newValue.toLowerCase());
+          this.shadowRoot
+            .querySelector("#clock-analog")
+            .style.setProperty("--data-backgroundcolor", "#" + newValue);
+        } else {
+          if (isColor(newValue)) {
+            this.shadowRoot
+              .querySelector("#clock-analog")
+              .style.setProperty("--data-backgroundcolor", newValue);
+          } else {
+            console.log(
+              `${attrName}:`,
+              `Invalid Attribute data! (${newValue.toLowerCase()})`
+            );
+          }
+        }
+      }
+    } else {
+      let dynamicDate = new Date();
+
+      this.updateDigitalClock(dynamicDate);
+      let thisElem = this;
+      setInterval(function () {
+        let dynamicDate = new Date();
+
+        thisElem.updateDigitalClock(dynamicDate);
+      }, 1000);
+
+      console.log(
+        `${attrName}:`,
+        `Invalid Attribute data! (${newValue.toLowerCase()})`
+      );
     }
+  }
 
-    updateDigitalClock(date) {
-        let element = this.shadowRoot.querySelector('#clock-analog');
+  updateDigitalClock(date) {
+    let element = this.shadowRoot.querySelector("#clock-analog");
 
-        let dynamicDate = new Date(date);
-        console.log(dynamicDate);
+    let dynamicDate = new Date(date);
+    console.log(dynamicDate);
 
-        let seconds = dynamicDate.getSeconds();
-        let secondsDegrees = ((seconds / 60) * 360) + 90;
-        element.querySelector('.second-hand').style.transform = `rotate(${secondsDegrees}deg)`;
+    let seconds = dynamicDate.getSeconds();
+    let secondsDegrees = (seconds / 60) * 360 + 90;
+    element.querySelector(
+      ".second-hand"
+    ).style.transform = `rotate(${secondsDegrees}deg)`;
 
-        let mins = dynamicDate.getMinutes();
-        let minsDegrees = ((mins / 60) * 360) + ((seconds / 60) * 6) + 90;
-        element.querySelector('.min-hand').style.transform = `rotate(${minsDegrees}deg)`;
+    let mins = dynamicDate.getMinutes();
+    let minsDegrees = (mins / 60) * 360 + (seconds / 60) * 6 + 90;
+    element.querySelector(
+      ".min-hand"
+    ).style.transform = `rotate(${minsDegrees}deg)`;
 
-        let hour = dynamicDate.getHours();
-        let hourDegrees = ((hour / 12) * 360) + ((mins / 60) * 30) + 90;
-        element.querySelector('.hour-hand').style.transform = `rotate(${hourDegrees}deg)`;
-    }
+    let hour = dynamicDate.getHours();
+    let hourDegrees = (hour / 12) * 360 + (mins / 60) * 30 + 90;
+    element.querySelector(
+      ".hour-hand"
+    ).style.transform = `rotate(${hourDegrees}deg)`;
+  }
 }
 // CUSTOM ELEMENT
-window.customElements.define('analog-clock', AnalogClock); //<analog-clock>
+window.customElements.define("analog-clock", AnalogClock); //<analog-clock>
