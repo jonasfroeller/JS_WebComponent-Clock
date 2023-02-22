@@ -14,6 +14,7 @@ digitalClock.innerHTML = `
         --data-backgroundColor: #000;
         font-family: 'Goldman';
         font-size: 125%;
+        max-width: 90vw;
         width: 43.75rem;
         text-align: center;
         color: var(--data-color);
