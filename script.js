@@ -13,40 +13,50 @@ digitalClock.innerHTML = `
         --data-color: #fff;
         --data-backgroundColor: #000;
         font-family: 'Goldman';
-        font-size: 125%;
+        font-size: 2.5rem ;
         max-width: 90vw;
-        width: 43.75rem;
+        width: fit-content;
         text-align: center;
         color: var(--data-color);
         background-color: var(--data-backgroundColor);
         border: 0.25rem solid var(--data-color);
         border-radius: 1vh;
-        display: grid;
-        grid-template-columns: 5% auto;
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        margin: 0.5rem;
+    }
+
+    @media only screen and (max-width: 1400px) {
+      #clock-digital {
+        font-size: 1.25rem !important;
+      }
+      #clock-time {
+        font-size: 2.5rem !important;
+      }
+      #clock-date {
+        font-size: 1.875rem !important;
+      } 
     }
     
     #clock-day {
         writing-mode: vertical-rl;
         text-orientation: upright;
         letter-spacing: 0px;
-        padding-left: 50px;
-        padding-bottom: 20px;
     }
     
     #clock-dynamic-display {
+        padding: 2rem;
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
     }
     
     #clock-time {
-        width: 31.25rem;
+        width: fir-content;
         display: grid;
         justify-content: center;
-        grid-template-columns: calc(100% / 4) calc(100% / 8) calc(100% / 4) calc(100% / 8) calc(100% / 4);
-        font-size: 200%;
+        grid-template-columns: 1fr auto 1fr auto 1fr;
+        font-size: 5rem;
     }
     
     #clock-hours, #clock-minutes, #clock-seconds, #clock-AmPm {
@@ -54,7 +64,7 @@ digitalClock.innerHTML = `
     }
     
     #clock-date {
-        font-size: 175%;
+        font-size: 3.75rem;
     }
     </style>
 
@@ -270,12 +280,60 @@ analogClock.innerHTML = `
         --data-backgroundcolor: #000;
         font-family: 'Goldman';
         width: 30rem;
-        height: 30rem;
+        aspect-ratio: 1/1;
         border: 0.25rem solid var(--data-maincolor);
         padding: 1rem;
         border-radius: 50%;
         position: relative;
         background-color: var(--data-backgroundcolor);
+        margin: 0.5rem;
+    }
+
+    @media only screen and (max-width: 1400px) {
+      #clock-analog {
+        /* transform: scale(0.6); keeps height + width */
+        width: 18rem !important;
+        height: 18rem !important;
+        padding: 0.6rem !important;
+        border: 0.15rem solid var(--data-maincolor) !important;
+      }
+
+      .inner-clock-face::before {
+        width: 9.6px !important;
+        height: 9.6px !important;
+        border-radius: 9.6px !important;
+        margin-left: -5.4px !important;
+        margin-top: -3.6px !important; 
+      }
+    
+      .hand {
+        height: 3.6px !important;
+        border-radius: 3.6px !important;
+      }
+
+      .hand.min-hand {
+        height: 1.8px !important;
+      }
+    
+      .hand.second-hand {
+        height: 1.2px !important;
+      }
+
+      .hours {
+        left: calc(9rem - 24px) !important;
+        font-size: 13.999999999 !important;
+        letter-spacing: -0.96px !important;
+        line-height: 27px !important;
+      }
+
+      li {
+        height: 9rem !important;
+        font-size: 125% !important;
+      }
+
+      .hours li {
+        width: 48px !important;
+      }
     }
     
     .outer-clock-face {
